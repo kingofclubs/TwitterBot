@@ -40,8 +40,8 @@ class CacheRegister:
             self.activeFile.close()
             return True
         except:
-            raise
             print "Error: unable to create cache file"
+            raise
             return False
 
     def deleteCache(self, userID):
