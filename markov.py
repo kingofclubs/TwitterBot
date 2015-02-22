@@ -1,5 +1,15 @@
 class Markov:
-	#TODO: Fix the order-size issue; See line ~137
+	#INSTRUCTIONS FOR USE
+	#First, import and create the markov object (import markov, m = markov.Markov()
+	#then, load the dictionary (m.loadDictionary)
+	#	the script will look for the dictionary as defined by self.dictionaryFile
+	#	if it doesn't exist, it'll create an empty dictionary
+	#If you need words in your dictionary, use m.appendDictionary(<infile>)
+	#	don't forget to m.saveDictionary() so you don't have to update it every time you load the module
+	#then just call m.markovString() to be returned a random string!
+	#	m.markovString(#) will change the order-size of the markov bot, 1 being default
+	# 	be sure to build your dictionary to match the order-size of the bot you're making
+	#	otherwise you might run in to some preformance issues.
 	#import sys, random
 	dictionaryFile = ''
 	dictionary = {}
@@ -17,14 +27,14 @@ class Markov:
 		
 	def saveDictionary(self):
 		import cPickle
-		inDict = Markov.dictionaryFile
+		inDict = self.dictionaryFile
 		inDict2 = open(inDict, 'wb')
-		cPickle.dump(Markov.dictionary, inDict2)
+		cPickle.dump(self.dictionary, inDict2)
 		inDict2.close()	
 
 	def loadDictionary(self):
 		import cPickle
-		inDictionary=Markov.dictionaryFile
+		inDictionary=self.dictionaryFile
 		#loads a file defined in inDictionary, and then unpickles it 
 		#and returns it as a python dictionary to the Class scope
 		try: 
@@ -41,12 +51,12 @@ class Markov:
 		except:
 			raise
 			dict = {}
-		Markov.dictionary = dict
+		self.dictionary = dict
 		inDict.close()
 	
 	def appendDictionary(self, inFile):
-		dictionary = Markov.dictionary
-		order = Markov.markovOrder
+		dictionary = self.dictionary
+		order = self.markovOrder
 		f = ''
 		
 		#try and load the inFile for processing into the dictionary
@@ -89,7 +99,7 @@ class Markov:
 					dictionary[window[0]] = {window[1]: 1}
 				#print "created root value: " + str(dictionary[window[0]])
 		print "reached end"
-		Markov.dictionary = dictionary
+		self.dictionary = dictionary
 		
 	def nextMarkov(self,inKey):
 		import random
@@ -97,9 +107,9 @@ class Markov:
 		#if it can't find the key, it returns a random value from the dictionary
 		randLimit = 0
 		r = random.random()
-		if Markov.dictionary.has_key(inKey):
+		if self.dictionary.has_key(inKey):
 			#store the dictionary as a list of touples, so we can iterate through the key pairs
-			i = Markov.dictionary[inKey].items()
+			i = self.dictionary[inKey].items()
 					
 			#determine the total weight of all values for a given key, 
 			#and multiply that by our random number r
@@ -118,7 +128,7 @@ class Markov:
 			#this part should really only be called once, otherwise mistakes were made
 			#print "rando cardrissian"
 			#print inChar
-			listDict = Markov.dictionary.keys()
+			listDict = self.dictionary.keys()
 			r = int(r * len(listDict))
 			returnVale = listDict[r]
 		#print randMax
@@ -129,7 +139,7 @@ class Markov:
 		
 		return returnVale
 	
-	def markovString(self):
+	def markovString(self, keySizeIn=1):
 		outputLimit = int(self.outputLength)
 		#The first argument should contain the pickled markov dicitonary as created by appendDictionaryWords.py
 		#otherwise, fail and end execution
@@ -137,12 +147,16 @@ class Markov:
 		#increasing this will change how large a window the bot uses when determining the next value
 		#not building the dictionary to match the keySize here will result in state-independant randomness
 		#which would be not markovian at all, so make sure to build the dictionary correctly.
-		keySize = 1
+		keySize = keySizeIn
 
 		#scoping these variables for use, as well as defining the first character in the list
 		index = 0
 		outString = ''
-		outStringSplit = [Markov.nextMarkov(self,'')]
+		#removed brackets around "Markov.nextMarkov(self, '')"
+		#added line outStringSplit = outStringSplit.split(' ')
+		outStringSplit = self.nextMarkov('')
+		outStringSplit = outStringSplit.split(' ')
+		
 		
 		while len(outString) <= outputLimit:
 			key = keySize
@@ -159,7 +173,7 @@ class Markov:
 				key = key - 1
 			#concacinate the keyWord list, pass it to nextChar()
 			keyWordStr = ' '.join(keyWord)
-			outStringSplit.append(Markov.nextMarkov(self, keyWordStr))
+			outStringSplit.append(self.nextMarkov(keyWordStr))
 			#and then build the string to check the lenght value against the outputLimit
 			outString = ' '.join(outStringSplit)
 			index += 1
